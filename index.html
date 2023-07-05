@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>D3.js Interaction Example For ICN ROOM</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .node {
+            /* you can change any color to tthe nodes here */
+            fill: steelblue;
+            stroke: white;
+            stroke-width: 2px;
+        }
+
+        .link {
+            /* you can change any color to tthe line here */
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+<script>
+    var svg = d3.select("body").append("svg")
+        .attr("width", 800)
+        .attr("height", 600);
+
+    svg.append("text")
+        .attr("x", 800 / 2)             
+        .attr("y", 600 / 2)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "20px") 
+        .style("fill", "gray")
+        .text("Click and drag to play with me");
+//you can fake any of data here, I use SAP ICN ROOM for example
+    var nodesData = [
+        {id: "node1", label: "S"}, 
+        {id: "node2", label: "A"}, 
+        {id: "node3", label: "P"}, 
+        {id: "node4", label: "I"}, 
+        {id: "node5", label: "C"},
+        {id: "node6", label: "N"},
+        {id: "node7", label: "R"},
+        {id: "node8", label: "O"},
+        {id: "node9", label: "O"},
+        {id: "node10", label: "M"}
+    ];
+//you can change the way how it connect
+    var linksData = [
+        {source: "node1", target: "node2"},
+        {source: "node2", target: "node3"},
+        {source: "node3", target: "node4"},
+        {source: "node4", target: "node5"},
+        {source: "node5", target: "node6"},
+        {source: "node6", target: "node7"},
+        {source: "node7", target: "node8"},
+        {source: "node8", target: "node9"},
+        {source: "node9", target: "node10"},
+        {source: "node10", target: "node1"}
+    ];
+
+    var simulation = d3.forceSimulation(nodesData)
+        .force("link", d3.forceLink(linksData).id(d => d.id))
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force("center", d3.forceCenter(400, 300));
+
+    var link = svg.append("g")
+        .selectAll("line")
+        .data(linksData)
+        .enter()
+        .append("line")
+        .attr("class", "link");
+
+    var node = svg.append("g")
+        .selectAll("circle")
+        .data(nodesData)
+        .enter()
+        .append("circle")
+        .attr("class", "node")
+        .attr("r", 20)
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+
+    var labels = svg.append("g")
+        .selectAll("text")
+        .data(nodesData)
+        .enter()
+        .append("text")
+        .text(d => d.label)
+        .attr("dx", -5)
+        .attr("dy", 2);
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        labels
+            .attr("x", d => d.x)
+            .attr("y", d => d.y);
+    });
+
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+</script>
+</body>
+</html>
